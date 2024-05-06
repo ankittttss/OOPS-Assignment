@@ -45,11 +45,11 @@ class Library{  // Library Class that will contain the basic information where i
   string address;
   Library(string name,string address):name(name),address(address){}
 
-  void getname(){
+  string getname(){
       return name;
   }
 
-  void address(){
+  string getaddress(){
       return address;
   }
 };
@@ -73,10 +73,11 @@ class BookItem{ // Every Book Will have a copy and we call it as a Book Item and
       int price;
       bool availaible;
       Rack r;
-      Book b;
+      Book b;  
+      time_t duedate;
 
-      BookItem(string barcode,string status,int price,bool availaible,Rack r,Book b):
-      barcode(barcode),status(status),price(price),availaible(true),r(r),b(b){}
+      BookItem(string barcode,string status,int price,bool availaible,Rack r,Book b,time_t duedate):
+      barcode(barcode),status(status),price(price),availaible(true),r(r),b(b),duedate(duedate){}
 
      void isavailaible(bool status){
          availaible = status;
@@ -99,22 +100,27 @@ class BookItem{ // Every Book Will have a copy and we call it as a Book Item and
      void setstatus(string& s){
          status = s;
      }
+
+     void setduedate(){
+
+     }
 };
 
 class Account{ // A librarian and a Mmeber will have there own Account that will include some informarion such as Password and Email//
     public:
     string email;
-    string id;
+    int  id;
     string name;
     string barcode;
     string password;
-    Account(string email,string id,string name,string barcode,string password):email(email),id(id),name(name),barcode(barcode),password(password){}
+    Account(string email,int id,string name,string barcode,string password):email(email),id(id),name(name),barcode(barcode),password(password){}
 };
 
 class Member:public Account{  // This is the Member Class and it will incude the borrowed books//
     public:
-    vector<BookItem>booksborrowednbymember;
-    Member(string email,string id,string name,string barcode,string password):Account(email,id,name,barcode,password){}
+    vector<BookItem>checkedoutBooks;
+    vector<BookItem>Books;
+    Member(string email,int id,string name,string barcode,string password):Account(email,id,name,barcode,password){}
     
     // Some Getter Function to get some details//
     string getbarcode(){
@@ -125,31 +131,57 @@ class Member:public Account{  // This is the Member Class and it will incude the
         return email;
     }
 
-    string getid(){
+    int getid(){
         return id;
     }
 
-    // Some Member Function to implement//
-    void borrowabook(BookItem& b){
-         booksborrowednbymember.push_back(b);
-         b.isavailaible(false);
-         string h = "borrowed";
-         b.setstatus(h);
+    int finecalculation(BookItem& b){
+        time_t recent = time(0);
+        time_t back = b.duedate;
+        return 1;
     }
 
-    void renewabook(Member& m){
-        
+
+     void borrowabook(BookItem& b){
+         if(checkedoutBooks.size() >= 5){
+             cout<<"You Can't check out the book";
+         }
+
+         else{
+             checkedoutBooks.push_back(b);
+             time_t now = time(0);
+             b.duedate = now + (10*24*60*60);
+             string statusname = "Borrowed";
+             b.setstatus(statusname);
+             cout<<"Book has been Borrowed"<<endl;
+         }
+     }
+
+    void returnabook(BookItem b){
+        // for(auto it=checkedoutBooks.begin();it!=checkedoutBooks.end();it++){
+        //     if(*it == b){
+        //         BookItem.erase(it);
+        //         bookitem.setduedate();
+        //         b.isavailaible(true);
+        //         b.status = "Availaible";
+        //         break;
+        //     }
+        // }
     }
 
-    void returnabook(BookItem& b){
-        
+
+    void renewabook(BookItem& b){
+         if(b.availaible == true){
+             cout<<"Book Has been renewed"<<endl;
+         }
     }
 
     vector<BookItem>searchbytitle(BookItem& b){
        vector<BookItem>resultant;
-       for(int i=0;i<booksborrowednbymember.size();i++){
-           if(b.b.title == booksborrowednbymember[i].b.title){
-               resultant.push_back(booksborrowednbymember[i]);
+
+       for(int i=0;i<Books.size();i++){
+           if(b.b.title == Books[i].b.title){
+               resultant.push_back(Books[i]);
            }
        }
        return resultant;
@@ -157,19 +189,20 @@ class Member:public Account{  // This is the Member Class and it will incude the
 
     vector<BookItem>searchbyauthor(BookItem& b){
           vector<BookItem>resultant;
-          for(int i=0;i<booksborrowednbymember.size();i++){
-              if(b.b.author == booksborrowednbymember[i].b.author){
-                  resultant.push_back(booksborrowednbymember[i]);
+
+          for(int i=0;i<Books.size();i++){
+              if(b.b.author == Books[i].b.author){
+                  resultant.push_back(Books[i]);
               }
           }
           return resultant;
     }
 
-    vector<BookItem>searchbysubject(){
+    vector<BookItem>searchbysubject(BookItem& b){
            vector<BookItem>resultant;
-          for(int i=0;i<booksborrowednbymember.size();i++){
-              if(b.b.subject == booksborrowednbymember[i].b.subject){
-                  resultant.push_back(booksborrowednbymember[i]);
+          for(int i=0;i<Books.size();i++){
+              if(b.b.subject == Books[i].b.subject){
+                  resultant.push_back(Books[i]);
               }
           }
           return resultant;
@@ -181,27 +214,37 @@ class Librarian:public Account{
     public:
     vector<Book>Booksinlibrary;
     vector<Member>TotalMember;
+    
 
-    Librarian(string email,string id,string name,string barcode,string password):Account(email,id,name,barcode,password){}
+    Librarian(string email,int id,string name,string barcode,string password):Account(email,id,name,barcode,password){}
     // Some Librarian Methods -:Librarian can addBook,addMember,deleteamember,editbook,deleteabook and several others//
     void addBook(Book& b){
           Booksinlibrary.push_back(b);
+    }
+
+    void addBookItem(BookItem& bookitem,Book& book){
+           TotalBookItem[book.identificationno].push_back(bookitem);
     }
 
     void addamember(Member& m){
         TotalMember.push_back(m);
     }
 
-    void deleteamember(){
-
+    void deleteamember(Member& b){
+         for(auto it=TotalMember.begin();it!=TotalMember.end();it++){
+            //  if(*it == b){
+            //      TotalMember.erase(it);
+            //      break;
+            //  }
+         }
     }
 
-    void editbook(){
-
+    void editbook(Book& b){
+         
     }
 
-    void deleteabook(){
-
+    void deleteabook(Book& b){
+         
     }
 
     vector<Book>searchbytitle(string& title){
@@ -235,8 +278,9 @@ class Librarian:public Account{
     }
 
     void issuebook(BookItem& b,Member& m){
-         string reserved = "Issued";
-         b.status = reserved;
+         string issued = "Issued";
+         b.status = issued;
+         b.setduedate();
          cout<<"The book with Title"<<" "<<b.b.title<<" "<<"Is Issued"<<" "<<"by"<<" "<<m.name<<" "<<endl;
     }
 
@@ -263,20 +307,23 @@ class System{
 
 int main() {
     Book b(12,"ankit","ankit","ankit","ankit","ankit","ankit");
-    Librarian r("ankit","23","saini","1234","1234");
+    Librarian r("ankitsaini955831@gmail.com",1023,"saini","1234","1234");
     r.addBook(b);
-    Member M("ankitsaini","12","ankit","1234","123456");
+    Member M("ankitsaini",12,"ankit","1234","123456");
 
     string search = "ankit";
     vector<Book>ans = r.searchbytitle(search);
 
     Rack g(20);
-    BookItem s("1234","availaible",1234,true,g,b);
+    BookItem s("1234","availaible",1234,true,g,b,time(0));
+
     r.issuebook(s,M);
+    cout<<endl;
+
     vector<BookItem>resultant = M.searchbytitle(s);
 
-    for(BookItem b:resultant){
-        cout<<b.b.title<<endl;
-    }
+    // for(BookItem b:resultant){
+    //     cout<<b.b.title<<endl;
+    // }
     return 0;
 }

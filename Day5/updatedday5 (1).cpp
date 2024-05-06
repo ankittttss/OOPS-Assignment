@@ -2,33 +2,46 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class Media{
+class Media{  // We can send different types of Media in a chat Box that can in form of Video, Image and Location
     public:
-    string type;
-    Media(string type):type(type){}
+    Media(){}
 };
 
-class Text:public Media{
-    public:
-    Text(string type):Media(type){}
+class Photo:public Media{  
+  public:
+  int size;  // size of the photo
+  string format; // format of the photo -: jpg,png
+  string comment; // We can add a comment on a photo before sending it
+  Photo(int size,string format,string comment):Media(),size(size),format(format),comment(comment){}
 };
 
-class Video:public Media{
+class Video:public Media{  // We can send the Media in the form of Video Also//
     public:
-    Video(string type):Media(type){}
+    int size;             // The size of the Video//
+    int format;           // The format such as -: mkv,mp4// 
+    string comment;       // We can add some additional information // 
+    Video(int size,int format,string comment):Media(),size(size),format(format),comment(comment){}
 };
+
+class Location:public Media{ // We can send our Live Location to the people// 
+    public:
+    string latitude;     // These are the coordinates of our location//
+    string longitude;
+    Location(string latitude,string longitude):Media(),latitude(latitude),longitude(longitude){}
+};
+
 
 
 class Contact{  // Class define about our Contacts and their information such as Name,email,phoneNo and address//
   public:
-  string name;
-  string phoneno;
-  string email;
+  string name;  // Name of our Contact//
+  string phoneno; // Phone Number//
+  string email;  // Email //
   string address;
+
   Contact(string name,string phoneno,string email,string address):name(name),phoneno(phoneno),email(email),address(address){}
  
    // This is our getter Function that helps you to return a specific Value//
-
 
   string getname(){
       return name;
@@ -80,14 +93,17 @@ class chat{
   public:
   string type;
   string message;
-  chat(string type,string message):type(type),message(message){}
+  time_t recent;
+  bool sendstatus;
+  chat(string type,string message,time_t recent,bool sendstatus):type(type),message(message),recent(recent),sendstatus(sendstatus){}
 
   
 };
 
 class chatManager{
     public:
-
+   
+    map<string,vector<chat>>chatstored;
     void receiveavideocall(string& name){  // The receiver will receive the video call by this//
        cout<<"Video Call Accepted by"<<" "<<name<<endl;
    }
@@ -99,6 +115,7 @@ class chatManager{
    void sendatextmessage(chat& chat,User& user,Contact& contact){
           cout<<chat.message<<endl;
           cout<<"Message delievered by "<<user.name<<" "<<"to"<<" "<<contact.name<<endl;
+          chatstored[contact.name].push_back(chat);
           receivedatextmessage(user.name);
 
    }
@@ -107,6 +124,23 @@ class chatManager{
          cout<<user.name<<" "<<"has Initiated a videocall to "<<" "<<contact.name<<endl;
          receiveavideocall(contact.name);
    } 
+
+   void deleteallchat(){
+
+   }
+
+   void sendatextmessagewithattachment(chat& chat,Photo& p,Contact& c){
+      
+   }
+
+   void sendatextmessagewithattachment(chat& chat,Video& p,Contact& c){
+
+   }
+
+   void sendalocation(chat& chat,Location& l,Contact& c){
+       
+   }
+
 };
 
 class UserManager{
@@ -201,7 +235,7 @@ int main() {
     Contact f("Ankit","12345678","Ankit","Saini");
     User u("Ankit",c,"a",5);
     Status ss("Video","Hi There",2);
-    chat y("text","Hey there");
+    chat y("text","Hey there",time(0),false);
 
     StatusManager sm;
     UserManager um;
@@ -221,7 +255,6 @@ int main() {
     for(int i=0;i<AllContact.size();i++){
           cout<<AllContact[i].name<<endl;
     }
-
 
     return 0;
 }
